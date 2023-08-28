@@ -1,11 +1,10 @@
-resource "null_resource" "download_lambda_zip" {
-  triggers = {
-    version = var.exporter_version
-  }
+data "http" "exporter" {
+  url = "https://github.com/gadgetry-io/lambda-cloudwatch-export/releases/download/v${var.exporter_version}/lambda-cloudwatch-export_${var.exporter_version}_linux_amd64.zip"
+}
 
-  provisioner "local-exec" {
-    command = "curl -L -o ${path.module}/lambda-cloudwatch-export_${var.exporter_version}_linux_amd64.zip https://github.com/gadgetry-io/lambda-cloudwatch-export/releases/download/v${var.exporter_version}/lambda-cloudwatch-export_${var.exporter_version}_linux_amd64.zip"
-  }
+resource "local_file" "exporter" {
+  content  = data.http.exporter.body
+  filename = "${path.module}/lambda-cloudwatch-export_${var.exporter_version}_linux_amd64.zip"
 }
 
 resource "aws_lambda_function" "cloudwatch_export" {
